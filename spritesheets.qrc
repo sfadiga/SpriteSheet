@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>sprites/blood_exp.png</file>
+        <file>sprites/fire_exp.png</file>
+        <file>sprites/smoke_exp.png</file>
+        <file>sprites/sprite_sheet.png</file>
+    </qresource>
+</RCC>
