@@ -11,5 +11,6 @@ MIT license
 The idea behind this class was 'stoled' from here:
 https://evileg.com/en/post/92/
 
-the demo runs like this:
+The demo app runs like this:
+
 ![sprite](https://user-images.githubusercontent.com/2021800/47973507-e90fc180-e08b-11e8-8235-01091443a8ce.png)
