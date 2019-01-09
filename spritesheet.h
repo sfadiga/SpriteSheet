@@ -31,8 +31,24 @@ public:
     //! \param parent - a parent item of the scene, if any
     //!
     SpriteSheet(int spriteW, int spriteH, QString pixpath,
-                int spriteCount, int spriteIndex = 0, int offsetW = 0, int offsetH = 0,
+                int spriteCount, int spriteIndex = 0, int x = 0, int y = 0,
                 QGraphicsItem *parent = nullptr);
+
+    //!
+    //! \brief SpriteSheet - almost same constructor as above, but uses an actual reference to a pixmap obj
+    //! \param spriteW
+    //! \param spriteH
+    //! \param pixpath
+    //! \param spriteCount
+    //! \param spriteIndex
+    //! \param offsetW
+    //! \param offsetH
+    //! \param parent
+    //!
+    SpriteSheet(int spriteW, int spriteH, QPixmap pixmap,
+                int spriteCount, int spriteIndex = 0, int x = 0, int y = 0,
+                QGraphicsItem *parent = nullptr);
+
     ~SpriteSheet() override = default;
     SpriteSheet() = delete;
 
@@ -50,6 +66,12 @@ public:
     //! \param removeFromScene - after animation ends remove automatically from scene if true
     //!
     void animate(int framerate = 25, bool loop = false, int spriteIndex = 0, bool removeFromScene = false);
+
+    //!
+    //! \brief isAnimating - indicates if a animation is in progress (to users that must avoid using signals/slots)
+    //! \return
+    //!
+    //bool isAnimating();
 
 signals:
     //!
@@ -71,6 +93,11 @@ public slots:
     //! timer.
     //!
     void nextSprite();
+
+    //!
+    //! \brief stop - stops the animation
+    //!
+    void stop();
 
 public:
     //!
@@ -96,7 +123,8 @@ private:
     //!
     //! \brief pixmap_ - the qpixmap will load the image as the sprite sheet
     //!
-    QSharedPointer<QPixmap> pixmap_;
+    //QSharedPointer<QPixmap> pixmap_;
+    QPixmap pixmap_;
 
     //!
     //! \brief spriteW_ - the width of the sprite inside the sprite sheet
@@ -121,14 +149,14 @@ private:
     int spriteIndex_;
 
     //!
-    //! \brief offsetX_ - a offset in x of the designated square of the sprite
+    //! \brief x_ - a offset in x of the designated square of the sprite
     //!
-    int offsetX_;
+    int x_;
 
     //!
-    //! \brief offsetY_ - a offset in y of the designated square of the sprite
+    //! \brief y_ - a offset in y of the designated square of the sprite
     //!
-    int offsetY_;
+    int y_;
 
     //!
     //! \brief rows_ - number of rows in the sprite sheet
@@ -154,6 +182,7 @@ private:
     //! \brief remove_
     //!
     bool remove_;
+
 };
 
 

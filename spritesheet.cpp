@@ -1,21 +1,39 @@
 #include "spritesheet.h"
-#include <QPixmapCache>
 #include <QGraphicsScene>
 
 
 SpriteSheet::SpriteSheet(int spriteW, int spriteH, QString pixpath,
                          int spriteCount, int spriteSelected,
-                         int offsetW, int offsetH, QGraphicsItem *parent)
+                         int x, int y, QGraphicsItem *parent)
     : QGraphicsObject(parent),
-      pixmapPath_(pixpath),
-      pixmap_(QSharedPointer<QPixmap>(new QPixmap(pixmapPath_))),
+      pixmapPath_(std::move(pixpath)),
+      pixmap_(QPixmap(pixmapPath_)),
       spriteW_(spriteW),
       spriteH_(spriteH), spriteCount_(spriteCount),
       spriteIndex_(spriteSelected),
-      offsetX_(offsetW),
-      offsetY_(offsetH),
-      rows_(pixmap_->height() / spriteH_),
-      columns_(pixmap_->width() / spriteW_),
+      x_(x),
+      y_(y),
+      rows_(pixmap_.height() / spriteH_),
+      columns_(pixmap_.width() / spriteW_),
+      loop_(false),
+      remove_(false)
+{
+    connect(&timer_, &QTimer::timeout, this, &SpriteSheet::nextSprite);
+    connect(this, &SpriteSheet::animationEnd, &timer_, &QTimer::stop);
+}
+
+SpriteSheet::SpriteSheet(int spriteW, int spriteH, QPixmap pixmap,
+                         int spriteCount, int spriteSelected,
+                         int x, int y, QGraphicsItem *parent)
+    : QGraphicsObject(parent),
+      pixmap_(pixmap),
+      spriteW_(spriteW),
+      spriteH_(spriteH), spriteCount_(spriteCount),
+      spriteIndex_(spriteSelected),
+      x_(x),
+      y_(y),
+      rows_(pixmap_.height() / spriteH_),
+      columns_(pixmap_.width() / spriteW_),
       loop_(false),
       remove_(false)
 {
@@ -42,7 +60,7 @@ void SpriteSheet::animate(int framerate, bool loop, int spriteIndex, bool remove
 
 QRectF SpriteSheet::boundingRect() const
 {
-    return QRectF(offsetX_, offsetY_, spriteW_, spriteH_);
+    return {static_cast<qreal>(x_), static_cast<qreal>(y_), static_cast<qreal>(spriteW_), static_cast<qreal>(spriteH_)};
 }
 
 void SpriteSheet::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -72,7 +90,7 @@ void SpriteSheet::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
      * By setting the X coordinate with the variable currentFrame we would like to move the camera on the sprite
      * and the last two arguments - the width and height of the displayed area, that is, the frame
      * */
-    painter->drawPixmap(offsetX_, offsetY_, *pixmap_, x, y, spriteW_, spriteH_);
+    painter->drawPixmap(x_, y_, pixmap_, x, y, spriteW_, spriteH_);
     Q_UNUSED(option);
     Q_UNUSED(widget);
 }
@@ -80,19 +98,25 @@ void SpriteSheet::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 void SpriteSheet::nextSprite()
 {
     spriteIndex_++;
-    if(spriteIndex_ > (spriteCount_-1))
+    if(spriteIndex_ >= spriteCount_)
     {   // reset the selected sprite index if greater than the number of available sprites
-        spriteIndex_ = 0;
+        spriteIndex_ = -1;
         if(!loop_)
         {
-            emit animationEnd();
-            return;
+            stop();
         }
         if(remove_)
         {
+            setParentItem(nullptr);
             scene()->removeItem(this);
             delete this;
         }
     }
-    this->update(offsetX_, offsetY_, spriteW_, spriteH_);
+    this->update(x_, y_, spriteW_, spriteH_);
+}
+
+void SpriteSheet::stop()
+{
+    timer_.stop();
+    emit animationEnd();
 }
